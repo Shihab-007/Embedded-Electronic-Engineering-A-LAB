@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+#include <SDL2/SDL.h>
+
+// Window dimensions
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
+
+// Lane dimensions
+const int LANE_WIDTH = 600;
+const int LANE_HEIGHT = 400;
+const int LANE_X = (WINDOW_WIDTH - LANE_WIDTH) / 2;
+const int LANE_Y = (WINDOW_HEIGHT - LANE_HEIGHT) / 2;
+
+// Car dimensions
+const int CAR_WIDTH = 80;
+const int CAR_HEIGHT = 40;
+const int CAR_SPEED = 3;
+const double TURN_ANGLE = 0.02; // Adjust this value to control the turning angle
+
+int main() {
+    SDL_Window* window = NULL;
+    SDL_Renderer* renderer = NULL;
+    SDL_Rect carRect;
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    window = SDL_CreateWindow("Car Taking Turns", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+    if (window == NULL) {
+        printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL) {
+        printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    carRect.w = CAR_WIDTH;
+    carRect.h = CAR_HEIGHT;
+    carRect.x = LANE_X + (LANE_WIDTH - CAR_WIDTH) / 2;
+    carRect.y = LANE_Y + (LANE_HEIGHT - CAR_HEIGHT) / 2;
+
+    SDL_Event e;
+    bool quit = false;
+    double angle = 0.0;
+    while (!quit) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                quit = true;
+            }
+        }
+
+        angle += TURN_ANGLE;
+        carRect.x = LANE_X + (LANE_WIDTH - CAR_WIDTH) / 2 + (LANE_WIDTH / 2 - CAR_WIDTH / 2) * cos(angle);
+        carRect.y = LANE_Y + (LANE_HEIGHT - CAR_HEIGHT) / 2 + (LANE_HEIGHT / 2 - CAR_HEIGHT / 2) * sin(angle);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderClear(renderer);
+
+        // Draw lane
+        SDL_Rect laneRect = {LANE_X, LANE_Y, LANE_WIDTH, LANE_HEIGHT};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &laneRect);
+
+        // Draw car
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &carRect);
+
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
