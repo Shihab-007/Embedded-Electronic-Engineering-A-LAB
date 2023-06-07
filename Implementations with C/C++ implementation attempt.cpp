@@ -20,6 +20,7 @@ int random_car;
 
 std::string currentLoc;
 std::string currentAc;
+int actionSwitch;
 std::string currentStatus;
 std::string currentTiming;
 
@@ -95,6 +96,42 @@ public:
     int getID() const {
         return id;
     }
+    
+    void statusAdvance() const{
+        if (status == "out of range")
+        {
+            status = "approaching";
+        }
+        if (status == "approaching")
+        {
+            status = "crossing";   
+        }
+        if (status == "crossing")
+        {
+            status = "leaving";
+        }
+        
+        if (status == "stop")
+        {
+            status = "starting";
+        }
+        if (status == "starting")
+        {
+            status = "crossing";
+        }
+    }
+    
+    void statusStop() const
+    {
+        if (status == "approaching")
+        {
+            status = "stop"
+        }
+        else
+        {
+            std::cout << "\nCan't stop the car at this state, please use statusAdvance." << std::end1;
+        }
+    }
 };
 
 void checkCarID(const Car& car) {
@@ -123,15 +160,122 @@ int randomizer(int nmbr_events){
     return event;
 }
 
-// void blockUpdate()
-// {
-//     return 0;
-// }
+void blockUpdateCross()
+{   
+    if(currentAc=="Right Turn")
+    {
+        actionSwitch = 1;
+    }
+    else if(currentAc=="Straight")
+    {
+        actionSwitch = 2;
+    }
+    else if(currentAc=="Left Turn")
+    {
+        actionSwitch = 3;
+    }
+    
+    if (currentLoc == "A")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[0] = 1;
+                break;
+            case 2:
+                blocks[0] = 1;
+                blocks[2] = 1;
+                break;
+            case 3:
+                blocks[0] = 1;
+                blocks[2] = 1;
+                blocks[3] = 1;
+                break;
+        }
+        
+    if (currentLoc == "B")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[3] = 1;
+                break;
+            case 2:
+                blocks[1] = 1;
+                blocks[3] = 1;
+                break;
+            case 3:
+                blocks[0] = 1;
+                blocks[1] = 1;
+                blocks[3] = 1;
+        }
+        
+    if (currentLoc == "C")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[1] = 1;
+                break;
+            case 2:
+                blocks[0] = 1;
+                blocks[1] = 1;
+                break;
+            case 3:
+                blocks[0] = 1;
+                blocks[1] = 1;
+                blocks[2] = 1;
+        }
+        
+    if (currentLoc == "D")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[2] = 1;
+                break;
+            case 2:
+                blocks[2] = 1;
+                blocks[3] = 1;
+                break;
+            case 3:
+                blocks[1] = 1;
+                blocks[2] = 1;
+                blocks[3] = 1;
+        }
+    }
+    
+    std::cout << "Blocks array =" << std::end1;
+    using namespace std;
+      copy(blocks,
+           blocks + sizeof(blocks) / sizeof(blocks[0]),
+           ostream_iterator<short>(cout, "\n"));
+}
 
 void enqueue()
 {   
     std::cout << "Enqueueing car with ID: " << random_car << std::endl;
     list[len++] = random_car;
+    std::cout << "\nLen = : " << len << std::endl;
+    std::cout << "\nList =" << std::endl;
+    using namespace std;
+      copy(list,
+           list + sizeof(list) / sizeof(list[0]),
+           ostream_iterator<short>(cout, "\n"));
+}
+
+void dequeue()
+{   
+    std::cout << "\nDequeuing" << std::endl;
+    
+    int i = 0;
+        len -= 1;
+        while (i < len)
+        {
+                list[i] = list[i + 1];
+                i++;
+        }
+        list[i] = 0;
     std::cout << "\nLen = : " << len << std::endl;
     std::cout << "\nList =" << std::endl;
     using namespace std;
@@ -181,6 +325,7 @@ int main() {
                 else if (event == 2)
                 {   
                     random_car = rand() % cars.size()+1;
+                    
                     Car(random_car).printCarStatus();
                     std::cout << "State Change. car approaches" << std::endl;
                     currentState = State::OCCUPIED;
