@@ -15,6 +15,11 @@ int nmbr_events;
 int event;
 int random_car;
 
+std::string currentLoc;
+std::string currentAc;
+std::string currentStatus;
+std::string currentTiming;
+
 class Car {
 private:
     int id;
@@ -75,6 +80,13 @@ public:
         std::cout << "timing: " << timing << std::endl;
         std::cout << "priority: " << priority << std::endl;
         std::cout << "status: " << status << std::endl;
+    }
+    
+    void setCarInfo() const{
+        currentTiming = timing;
+        currentStatus = status;
+        currentAc = action;
+        currentLoc = location;
     }
 
     int getID() const {
@@ -153,6 +165,7 @@ int main() {
                     std::cout << "State Change. car approaches" << std::endl;
                     currentState = State::OCCUPIED;
                     
+                    Car(random_car).setCarInfo();
                     
                     
                     break;
