@@ -4,6 +4,9 @@
 #include <ctime>
 #include <vector>
 #include<unistd.h>
+#include <iterator>
+#include <algorithm>
+
 unsigned int microsecond = 1000000;
 
 #define N 6
@@ -120,6 +123,23 @@ int randomizer(int nmbr_events){
     return event;
 }
 
+// void blockUpdate()
+// {
+//     return 0;
+// }
+
+void enqueue()
+{   
+    std::cout << "Enqueueing car with ID: " << random_car << std::endl;
+    list[len++] = random_car;
+    std::cout << "\nLen = : " << len << std::endl;
+    std::cout << "\nList =" << std::endl;
+    using namespace std;
+      copy(list,
+           list + sizeof(list) / sizeof(list[0]),
+           ostream_iterator<short>(cout, "\n"));
+}
+
 enum class State {
     FREE,
     OCCUPIED,
@@ -164,7 +184,7 @@ int main() {
                     Car(random_car).printCarStatus();
                     std::cout << "State Change. car approaches" << std::endl;
                     currentState = State::OCCUPIED;
-                    
+                    enqueue();
                     Car(random_car).setCarInfo();
                     
                     
@@ -180,6 +200,9 @@ int main() {
         case State::OCCUPIED:
             std::cout << "State = OCCUPIED." << std::endl;
             usleep(3*microsecond);
+            currentState = State::FREE;
+            break;
+            
             
             
             break;
