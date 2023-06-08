@@ -147,16 +147,14 @@ public:
         }
         else if (status == "crossing")
         {
-            status = "leaving";
+            status = "Out of Range";
+            timing = 0;
         }
         
         else if (status == "stop")
         {
-            status = "starting";
-        }
-        else if (status == "starting")
-        {
             status = "crossing";
+            timing = 3;
         }
         
         std::cout << "\nNew Status: " << status << "\n" << std::ends;
@@ -302,6 +300,105 @@ void blockUpdateCross()
            blocks + sizeof(blocks) / sizeof(blocks[0]),
            ostream_iterator<short>(cout, "\n"));
 }
+
+void blockUpdateLeave()
+{   
+    if(currentAc=="Right Turn")
+    {
+        actionSwitch = 1;
+    }
+    else if(currentAc=="Straight")
+    {
+        actionSwitch = 2;
+    }
+    else if(currentAc=="Left Turn")
+    {
+        actionSwitch = 3;
+    }
+    
+    if (currentLoc == "A")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[0] = 0;
+                break;
+            case 2:
+                blocks[0] = 0;
+                blocks[2] = 0;
+                break;
+            case 3:
+                blocks[0] = 0;
+                blocks[2] = 0;
+                blocks[3] = 0;
+                break;
+        }
+    }
+        
+    if (currentLoc == "B")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[3] = 0;
+                break;
+            case 2:
+                blocks[1] = 0;
+                blocks[3] = 0;
+                break;
+            case 3:
+                blocks[0] = 0;
+                blocks[1] = 0;
+                blocks[3] = 0;
+                break;
+        }
+    }
+        
+    if (currentLoc == "C")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[1] = 0;
+                break;
+            case 2:
+                blocks[0] = 0;
+                blocks[1] = 0;
+                break;
+            case 3:
+                blocks[0] = 0;
+                blocks[1] = 0;
+                blocks[2] = 0;
+                break;
+        }
+    }
+        
+    if (currentLoc == "D")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                blocks[2] = 0;
+                break;
+            case 2:
+                blocks[2] = 0;
+                blocks[3] = 0;
+                break;
+            case 3:
+                blocks[1] = 0;
+                blocks[2] = 0;
+                blocks[3] = 0;
+                break;
+        }
+    }
+    
+    std::cout << "Blocks array =" << std::ends;
+    using namespace std;
+      copy(blocks,
+           blocks + sizeof(blocks) / sizeof(blocks[0]),
+           ostream_iterator<short>(cout, "\n"));
+}
+
 
 int blockCheck()
 {
@@ -597,18 +694,43 @@ int main() {
                     cars[random_car-1].setCarInfo();
                     std::cout << "timing of car '" << random_car << "' = " << currentTiming << std::endl;
                     
-                    if(currentTiming == 2 && currentStatus == "approaching")
+                    
+                    if (currentTiming == 4 && currentStatus == "crossing")
+                    {
+                        dequeue();
+                        cars[random_car-1].statusAdvance();
+                        blockUpdateLeave();
+                        std::cout << "Car '" << random_car << "' has left the cross section\n" << std::endl;
+                    }
+                    
+                    else if(currentTiming == 2 && currentStatus == "approaching")
                     {
                         if (blockCheck() == 1)
-                        {
+                        {   
                             std::cout<<"this car can go\n" << std::ends;
+                            cars[random_car-1].statusAdvance();
+                            blockUpdateCross();
                         }
                         else if (blockCheck()==0)
                         {
                             std::cout<<"this car has to stop\n" << std::ends;
+                            cars[random_car-1].statusStop();
                         }
                     }
                     
+                    else if (currentStatus == "stop")
+                    {
+                        if (blockCheck() == 1)
+                        {   
+                            std::cout<<"this car can go now\n" << std::ends;
+                            cars[random_car-1].statusAdvance();
+                            blockUpdateCross();
+                        }
+                        else if (blockCheck()==0)
+                        {
+                            std::cout<<"this car can not start yet\n" << std::ends;
+                        }
+                    }
               }
               
               event = randomizer(2);     
