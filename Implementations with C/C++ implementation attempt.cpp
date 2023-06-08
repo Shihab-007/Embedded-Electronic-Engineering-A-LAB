@@ -106,7 +106,7 @@ public:
         std::cout << "\nCurrentTiming: " << currentTiming << "\n" << std::endl;
     }
     
-    void setCarTiming()
+    void setCarTiming() const
     {
         currentTiming = timing;
     }
@@ -114,6 +114,11 @@ public:
     void timingAdvance()
     {   
         timing=timing+1;
+    }
+    
+    void printTiming()
+    {
+        std::cout << "\nTiming of car: " << id << "\n= " << timing << std::endl;
     }
     
     void setCarInfo() const{
@@ -169,7 +174,7 @@ public:
         }
     }
     
-    std::string getStatus() const {
+    std::string getStatus() {
         return status;
     }
 };
@@ -198,16 +203,6 @@ int randomizer(int nmbr_events){
     int event;
     event = rand() % nmbr_events+1;
     return event;
-}
-
-int countCarsWithStatus(const std::vector<Car>& cars, const std::string& targetStatus) {
-    int count = 0;
-    for (const Car& car : cars) {
-        if (car.getStatus() == targetStatus) {
-            count++;
-        }
-    }
-    return count;
 }
 
 void blockUpdateCross()
@@ -259,6 +254,7 @@ void blockUpdateCross()
                 blocks[0] = 1;
                 blocks[1] = 1;
                 blocks[3] = 1;
+                break;
         }
     }
         
@@ -277,6 +273,7 @@ void blockUpdateCross()
                 blocks[0] = 1;
                 blocks[1] = 1;
                 blocks[2] = 1;
+                break;
         }
     }
         
@@ -295,6 +292,7 @@ void blockUpdateCross()
                 blocks[1] = 1;
                 blocks[2] = 1;
                 blocks[3] = 1;
+                break;
         }
     }
     
@@ -303,6 +301,172 @@ void blockUpdateCross()
       copy(blocks,
            blocks + sizeof(blocks) / sizeof(blocks[0]),
            ostream_iterator<short>(cout, "\n"));
+}
+
+int blockCheck()
+{
+   if(currentAc=="Right Turn")
+    {
+        actionSwitch = 1;
+    }
+    else if(currentAc=="Straight")
+    {
+        actionSwitch = 2;
+    }
+    else if(currentAc=="Left Turn")
+    {
+        actionSwitch = 3;
+    }
+    
+    if (currentLoc == "A")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                if (blocks[0] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 2:
+                if(blocks[0] == 1 || blocks[2] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 3:
+                if(blocks[0] == 1 || blocks[2] == 1 || blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+        }
+    }
+        
+    if (currentLoc == "B")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                if(blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 2:
+                if(blocks[1] == 1 || blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 3:
+                if(blocks[0] == 1 || blocks[1] == 1 || blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+                
+        }
+    }
+        
+    if (currentLoc == "C")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                if(blocks[1] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 2:
+                if(blocks[0] == 1 || blocks[1] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 3:
+                if(blocks[0] == 1 || blocks[1] == 1 || blocks[2] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+        }
+    }
+        
+    if (currentLoc == "D")
+    {
+        switch(actionSwitch)
+        {
+            case 1:
+                if(blocks[2] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 2:
+                if(blocks[2] == 1 || blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                break;
+            case 3:
+                if(blocks[1] == 1 || blocks[2] == 1 || blocks[3] == 1)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 1;
+                }
+                
+                break;
+        }
+    } 
 }
 
 void enqueue()
@@ -390,9 +554,6 @@ int main() {
                     Car(random_car).printCarStatus();
                     cars[random_car-1].statusAdvance();
                     
-                    cars[random_car].statusAdvance();
-                    cars[random_car].statusAdvance();
-                    
                     cars[random_car-1].printCarStatusOnly();
                     cars[random_car-1].setCarStatus();
                     cars[random_car-1].printCurrentStatus();
@@ -425,22 +586,91 @@ int main() {
             
             while(true)
             {
-               usleep(3*microsecond);
+              usleep(3*microsecond);
+              
+              
+              for (int i = 0; i<len; i++)
+              {     
+                    random_car = list[i];
+                    cars[random_car-1].setCarTiming();
+                    cars[random_car-1].setCarStatus();
+                    cars[random_car-1].setCarInfo();
+                    std::cout << "timing of car '" << random_car << "' = " << currentTiming << std::endl;
+                    
+                    if(currentTiming == 2 && currentStatus == "approaching")
+                    {
+                        if (blockCheck() == 1)
+                        {
+                            std::cout<<"this car can go\n" << std::ends;
+                        }
+                        else if (blockCheck()==0)
+                        {
+                            std::cout<<"this car has to stop\n" << std::ends;
+                        }
+                    }
+                    
+              }
+              
+              event = randomizer(2);     
+              if (event == 1) //time passes for every car
+              {
+                   targetStatus=cars[0].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[0].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+                targetStatus=cars[1].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[1].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+               targetStatus=cars[2].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[2].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+               targetStatus=cars[3].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[3].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+               targetStatus=cars[4].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[4].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+               targetStatus=cars[5].getStatus();
+               if (targetStatus == "crossing" || targetStatus == "approaching" || targetStatus == "leaving")
+               {
+                   cars[5].timingAdvance();
+                   std::cout << "\ntiming advanced\n" << std::endl;
+               }
+              }
                
-               event = randomizer(2);
-               targetStatus = "crossing";
-               count = countCarsWithStatus(cars, targetStatus);
-               std::cout << "count =" << count << std::ends;
-               
-            //   if (event == 1) //time passes for every car
-            //   {
+              if (event == 2) //another car approaches
+              {
+                   currentStatus = "";
                    
-            //   }
-               
-            //   if (event == 2) //another car approaches
-            //   {
+                    while (true)
+                    {
+                        random_car = rand() % cars.size()+1;
+                        currentStatus = cars[random_car-1].getStatus();
+                        if (currentStatus == "Out of Range")
+                        {
+                            break;
+                        }
+                   }
                    
-            //   }
+                   cars[random_car-1].statusAdvance();
+                   cars[random_car-1].timingAdvance();
+                   enqueue();
+                   std::cout << "\nnew approaching car with ID: " << random_car << "\n" << std::ends;
+              }
                
             }
             
