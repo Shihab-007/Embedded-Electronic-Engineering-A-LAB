@@ -801,12 +801,7 @@ int main() {
             
             
             break;
-        case State::PROCESSING:
-            std::cout << "State = PROCESSING." << std::endl;
             
-            
-            
-            break;
         default:
             std::cout << "Invalid state." << std::endl;
     }
