@@ -12,34 +12,36 @@ unsigned int microsecond = 1000000;
 #define N 6
 
 int blocks[4]; //4 blocks in the cross section
-int list[N+1];
+int list[N+1]; 
 int len;
 int nmbr_events;
 int event;
 int random_car;
 
+std::string targetStatus; //for checking how many cars have the same status
+int count = 0; //for checking how many cars have the same status
+
 std::string currentLoc;
 std::string currentAc;
 int actionSwitch;
 std::string currentStatus;
-std::string currentTiming;
+int currentTiming;
 
 class Car {
 private:
     int id;
     int priority;
-    int timing;
+    int timing; // timing for cars: starts at 0 - at 1 is approaching - at 2 is either approaching or stops - at 3 is crossing or starting - at 4 leaves or crosses(if stop) 
     std::string location;
     std::string action;
     std::string status;
     
 
 public:
-    Car(int carId) {
+    Car(int carId): status("Out of Range"), timing(0) {
         id = carId;
         priority = rand() % 3 + 1;
-        timing = 0;
-        status = "out of range";
+
         // Randomly assign location
         int locationIndex = rand() % 4;
         switch (locationIndex) {
@@ -81,56 +83,94 @@ public:
     
     void printCarStatus() const {
         std::cout << "Car ID: " << id << std::endl;
-        std::cout << "timing: " << timing << std::endl;
         std::cout << "priority: " << priority << std::endl;
-        std::cout << "status: " << status << std::endl;
+    }
+    
+    void printCarStatusOnly()
+    {
+        std::cout << "\nstatus: " << status << "\n" << std::endl;
+    }
+    
+    void setCarStatus()
+    {
+        currentStatus = status;
+    }
+    
+    void printCurrentStatus()
+    {
+        std::cout << "\nCurrentStatus: " << currentStatus << "\n" << std::endl;
+    }
+    
+    void printcurrentTiming()
+    {
+        std::cout << "\nCurrentTiming: " << currentTiming << "\n" << std::endl;
+    }
+    
+    void setCarTiming()
+    {
+        currentTiming = timing;
+    }
+    
+    void timingAdvance()
+    {   
+        timing=timing+1;
     }
     
     void setCarInfo() const{
-        currentTiming = timing;
-        currentStatus = status;
         currentAc = action;
         currentLoc = location;
+        
+        std::cout << "\nCurrentLoc = '" << currentLoc << "'\n" << std::ends;
     }
 
     int getID() const {
         return id;
     }
     
-    void statusAdvance() const{
-        if (status == "out of range")
+    
+    void statusAdvance(){
+        
+        std::cout << "\nOld status: " << status << "\n" << std::ends;
+        
+        if (status == "Out of Range")
         {
             status = "approaching";
         }
-        if (status == "approaching")
+        else if (status == "approaching")
         {
             status = "crossing";   
         }
-        if (status == "crossing")
+        else if (status == "crossing")
         {
             status = "leaving";
         }
         
-        if (status == "stop")
+        else if (status == "stop")
         {
             status = "starting";
         }
-        if (status == "starting")
+        else if (status == "starting")
         {
             status = "crossing";
         }
+        
+        std::cout << "\nNew Status: " << status << "\n" << std::ends;
     }
     
-    void statusStop() const
+    void statusStop()
     {
         if (status == "approaching")
         {
-            status = "stop"
+            status = "stop";
         }
         else
-        {
-            std::cout << "\nCan't stop the car at this state, please use statusAdvance." << std::end1;
+        {   
+            std::cout << "Can't stop the car at this state, please use statusAdvance. current status:  " << status << std::ends;
         }
+    }
+    
+    std::string getStatus() const {
+        return status;
     }
 };
 
@@ -158,6 +198,16 @@ int randomizer(int nmbr_events){
     int event;
     event = rand() % nmbr_events+1;
     return event;
+}
+
+int countCarsWithStatus(const std::vector<Car>& cars, const std::string& targetStatus) {
+    int count = 0;
+    for (const Car& car : cars) {
+        if (car.getStatus() == targetStatus) {
+            count++;
+        }
+    }
+    return count;
 }
 
 void blockUpdateCross()
@@ -192,6 +242,7 @@ void blockUpdateCross()
                 blocks[3] = 1;
                 break;
         }
+    }
         
     if (currentLoc == "B")
     {
@@ -209,6 +260,7 @@ void blockUpdateCross()
                 blocks[1] = 1;
                 blocks[3] = 1;
         }
+    }
         
     if (currentLoc == "C")
     {
@@ -226,6 +278,7 @@ void blockUpdateCross()
                 blocks[1] = 1;
                 blocks[2] = 1;
         }
+    }
         
     if (currentLoc == "D")
     {
@@ -245,7 +298,7 @@ void blockUpdateCross()
         }
     }
     
-    std::cout << "Blocks array =" << std::end1;
+    std::cout << "Blocks array =" << std::ends;
     using namespace std;
       copy(blocks,
            blocks + sizeof(blocks) / sizeof(blocks[0]),
@@ -293,7 +346,7 @@ enum class State {
 int main() {
     // Initialize random seed
     srand(time(0));
-    spawnCar();
+    
     
     State currentState = State::FREE;
     while(true)
@@ -301,9 +354,17 @@ int main() {
     switch(currentState) {
         case State::FREE:
         
+            std::cout << "State = FREE." << std::endl;
+            spawnCar();
+            spawnCar();
+            spawnCar();
+            spawnCar();
+            spawnCar();
+            spawnCar();
+            
             while(true)
             {
-                std::cout << "State = FREE." << std::endl;
+                
             
                 //possible events: A car spawns, A car approaches
                 
@@ -322,16 +383,33 @@ int main() {
                 {
                     spawnCar();
                 }
-                else if (event == 2)
+                else if (event == 2) //car approaches
                 {   
                     random_car = rand() % cars.size()+1;
                     
                     Car(random_car).printCarStatus();
+                    cars[random_car-1].statusAdvance();
+                    
+                    cars[random_car].statusAdvance();
+                    cars[random_car].statusAdvance();
+                    
+                    cars[random_car-1].printCarStatusOnly();
+                    cars[random_car-1].setCarStatus();
+                    cars[random_car-1].printCurrentStatus();
+                    cars[random_car-1].timingAdvance();
+                    cars[random_car-1].setCarTiming();
+                    cars[random_car-1].printcurrentTiming();
                     std::cout << "State Change. car approaches" << std::endl;
                     currentState = State::OCCUPIED;
                     enqueue();
-                    Car(random_car).setCarInfo();
                     
+                    cars[random_car-1].statusAdvance();
+                    cars[random_car-1].printCarStatusOnly();
+                    cars[random_car-1].setCarStatus();
+                    cars[random_car-1].printCurrentStatus();
+                    
+                    cars[random_car-1].setCarInfo();
+                    blockUpdateCross();
                     
                     break;
                 }
@@ -339,14 +417,34 @@ int main() {
                 
             }
             
-            
-            
             break;
+            
         case State::OCCUPIED:
+            
             std::cout << "State = OCCUPIED." << std::endl;
-            usleep(3*microsecond);
-            currentState = State::FREE;
-            break;
+            
+            while(true)
+            {
+               usleep(3*microsecond);
+               
+               event = randomizer(2);
+               targetStatus = "crossing";
+               count = countCarsWithStatus(cars, targetStatus);
+               std::cout << "count =" << count << std::ends;
+               
+            //   if (event == 1) //time passes for every car
+            //   {
+                   
+            //   }
+               
+            //   if (event == 2) //another car approaches
+            //   {
+                   
+            //   }
+               
+            }
+            
+    
             
             
             
