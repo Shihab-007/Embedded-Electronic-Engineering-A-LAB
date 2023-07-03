@@ -1,0 +1,1 @@
+A simulation video is uploaded in the presentation video in FREERTOS part where it is explained how it it works and the code function with freertos with an Arduino ESP-32
